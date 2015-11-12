@@ -1,0 +1,9 @@
+#
+# This text file identifies dependencies that will need to be checked for 
+# and auto-installed or removed when environment setup and teardown are 
+# done.
+#
+
+Pip Deps.
+	+ Flask
+	+ pymongo
