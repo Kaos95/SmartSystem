@@ -1,5 +1,5 @@
-# SmartSystemController
-A smart system controller designed for distribution on low-cost hardware.
+# SmartSystem
+A smart system designed for high-reliability on low-cost hardware.
 
 # Design
 + Virtual network associated with Controllers
