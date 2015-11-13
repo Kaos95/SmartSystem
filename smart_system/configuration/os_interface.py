@@ -27,10 +27,15 @@ class OSInterface(object):
 	@_ABC.abstractmethod
 	def resolve_dependencies(self, dependencies):
 		'''Resolve dependencies'''	
+		raise NotImplementedError()
 		
-		
+	@_ABC.abstractmethod
+	def resolve_dependency(self, dependency):
+		'''Resolve a single dependency.'''
+		raise NotImplementedError()
 
 class LinuxInterface(OSInterface):
+	import os as _OS
         '''Concrete OSInterface instance for use with linux'''
         def apply_configuration(self, configuration):
 		'''Apply a given configuration to the host operating system.'''
@@ -43,16 +48,19 @@ class LinuxInterface(OSInterface):
 
 	def resolve_dependencies(self, dependency_collection):
 		'''Resolve the dependencies in the collection.'''
-		assert(issubclass(dependency_collection,_CONF.DependencyCollection))
+		assert(issubclass(dependency_collection,_CONF.DependencyCollectionInterface))
 		was_success = False
 
 		# TODO: In conceptual form --> DependencyCollection isn't actual
 		# collection.
 		for dependency in dependency_collection:
-			dependency.
+			self.resolve_dependency(dependency)
 		
+	def resolve_dependency(self, dependency):	
+		'''Resolve the given dependency.'''
+		assert(issubclass(dependency, _DEP.DependencyInterface))
 		
-		
+				
 
 OSInterface.register(LinuxInterface)
 
