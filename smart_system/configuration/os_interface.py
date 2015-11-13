@@ -7,6 +7,7 @@
 # @creation-date: 11.12.2015
 
 import abc as _ABC
+import configurations as _CONF
 
 # TODO: Once more is understood about the specific requirements of sensor-based
 # operating systems and specifics, this should be refined. Should it be OSInterface
@@ -23,15 +24,35 @@ class OSInterface(object):
                 system.'''
 		raise NotImplementedError()
 
+	@_ABC.abstractmethod
+	def resolve_dependencies(self, dependencies):
+		'''Resolve dependencies'''	
+		
+		
+
 class LinuxInterface(OSInterface):
         '''Concrete OSInterface instance for use with linux'''
         def apply_configuration(self, configuration):
-                # . Ensure system environment is setup
-                self._setup_environment()
+		'''Apply a given configuration to the host operating system.'''
+		assert(issubclass(configuration, _CONF.Configuration))
+		was_success = False
 
+                config = configuration()
                 # . Run configuration and installation
+		self.resolve_dependencies(config.dependencies)
 
-	pass
+	def resolve_dependencies(self, dependency_collection):
+		'''Resolve the dependencies in the collection.'''
+		assert(issubclass(dependency_collection,_CONF.DependencyCollection))
+		was_success = False
+
+		# TODO: In conceptual form --> DependencyCollection isn't actual
+		# collection.
+		for dependency in dependency_collection:
+			dependency.
+		
+		
+		
 
 OSInterface.register(LinuxInterface)
 
