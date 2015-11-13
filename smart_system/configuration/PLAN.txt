@@ -1,0 +1,10 @@
+#
+# Document outlining purpose of this module
+#
+# @author: Hayden McParlane
+# @creation-date: 11.12.2015
+
+	This module will include system configuration information and will be used to
+auto-configure smart entities for the various system jobs. I.e, a Raspberry Pi acting
+as storage for the controller will use a child of smart_system.conf.Configuration() 
+base class.
