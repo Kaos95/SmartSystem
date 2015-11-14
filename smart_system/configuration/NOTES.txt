@@ -1,0 +1,10 @@
+def main():
+	
+	# 1. Get underlying system type
+	os_type = OSTypeFactory.get(platform.system())
+
+	# . Get OS interface
+	os = OSInterfaceFactory.get(os_type)
+
+	# . Apply config
+	os.apply_configuration(ControllerStorageConfiguration)
