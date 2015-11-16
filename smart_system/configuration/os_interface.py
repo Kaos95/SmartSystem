@@ -8,6 +8,13 @@
 
 import abc as _ABC
 import configurations as _CONF
+from smart_system.system_logging import LoggerFactory as _LOGGER_FACTORY
+from smart_system.core.signals import StatusSignal
+
+###############################################################################
+# Module globals
+###############################################################################
+_L = LoggerFactory.get("core", __name__)
 
 # TODO: Once more is understood about the specific requirements of sensor-based
 # operating systems and specifics, this should be refined. Should it be OSInterface
@@ -100,20 +107,24 @@ class OSInterfaceFactory(object):
 class OSTypeFactory(object):
         '''Factory for generating necessary operating system type objects.'''
         @staticmethod
-        def get(os_type):
+        def get(os_type_s):
                 '''Returns OSType instance.'''
-                if os_type is None or len(os_type) is 0:
-                        raise ValueError("OSTypeFactory cannot operate on NoneType or "
+                if os_type_s is None or len(os_type_s) is 0:
+			msg = "OSTypeFactory cannot operate on NoneType or "
                                          "an empty string. Value: {}"
-                                                .format(os_type or "None")
-                                        )
+                                                .format(os_type_s or "None")
+			_L.error(msg)
+                        raise ValueError(msg)
                 else:
                         os_type_obj = None
                         was_success = False
-                        if os_type.lowercase() is "linux":
+                        if os_type_s.lowercase() is "linux":
                                 os_type_obj = LinuxType()
 
                         if os_type_obj is not None:
                                 was_success = True
 
                         return StatusSignal(was_success=was_success, payload=os_type_obj)    
+
+if __name__ == '__main__':
+	#main()

@@ -1,4 +1,4 @@
-{ 'log_level':'WARNING  ', 'time_stamp':'11/15/2015 04:20:30 PM CST', 'logger_name':'__main__    ', 'path_to_file':'./system_logging.py', 'function_name':'main', 'line_number':'113', 'message':'This is a warning.' }
-{ 'log_level':'ERROR    ', 'time_stamp':'11/15/2015 04:20:30 PM CST', 'logger_name':'__main__    ', 'path_to_file':'./system_logging.py', 'function_name':'main', 'line_number':'114', 'message':'Some error occurred.' }
-{ 'log_level':'CRITICAL ', 'time_stamp':'11/15/2015 04:20:30 PM CST', 'logger_name':'__main__    ', 'path_to_file':'./system_logging.py', 'function_name':'main', 'line_number':'115', 'message':'Some critical error occurred.' }
-{ 'log_level':'CRITICAL ', 'time_stamp':'11/15/2015 04:20:30 PM CST', 'logger_name':'__main__    ', 'path_to_file':'./system_logging.py', 'function_name':'call_some_function', 'line_number':'107', 'message':'OH NO!!!' }
+{ 'log_level':'WARNING  ', 'time_stamp':'11/15/2015 04:28:41 PM CST', 'logger_name':'__main__    ', 'path_to_file':'./system_logging.py', 'function_name':'main', 'line_number':'107', 'message':'This is a warning.' }
+{ 'log_level':'ERROR    ', 'time_stamp':'11/15/2015 04:28:41 PM CST', 'logger_name':'__main__    ', 'path_to_file':'./system_logging.py', 'function_name':'main', 'line_number':'108', 'message':'Some error occurred.' }
+{ 'log_level':'CRITICAL ', 'time_stamp':'11/15/2015 04:28:41 PM CST', 'logger_name':'__main__    ', 'path_to_file':'./system_logging.py', 'function_name':'main', 'line_number':'109', 'message':'Some critical error occurred.' }
+{ 'log_level':'CRITICAL ', 'time_stamp':'11/15/2015 04:28:41 PM CST', 'logger_name':'__main__    ', 'path_to_file':'./system_logging.py', 'function_name':'call_some_function', 'line_number':'101', 'message':'OH NO!!!' }

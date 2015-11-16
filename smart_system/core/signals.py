@@ -20,3 +20,13 @@ class StatusSignal(SignalInterface):
 		
 	
 SignalInterface.register(StatusSignal)	
+
+class SignalManager(object):
+	'''An object which seamlessly processes signals.'''
+	__metaclass__ == _ABC.ABCMeta
+	pass
+
+class StatusSignalManager(SignalManager):
+	def __init__(self, ):
+		super(StatusSignalManager, self).__init__()
+	
