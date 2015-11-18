@@ -7,6 +7,7 @@
 import abc as _ABC
 from smart_system.core import globals as _G
 from smart_system.configuration import dependencies as _DEP
+import unittest as _UT
 
 class Configuration(object):
 	'''Abstract base class representing system component configuration. I.e, 
@@ -25,3 +26,19 @@ class Configuration(object):
 		dependency as value. I.e, pip_installer=["pymongo", "requests"]'''
 		return self.dependencies
 
+
+###############################################################################
+# Testing section
+###############################################################################
+#
+# The configuration object represents a configuration that the system
+# can apply. 
+#
+###############################################################################
+
+class ConfigurationTest(_UT.TestCase):
+	def setUp(self):
+		'''Setup the unit test fixture'''
+		
+	def tearDown(self):
+		'''Teardown the unit test fixture'''
