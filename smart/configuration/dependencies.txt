@@ -1,0 +1,18 @@
+#
+# This text file identifies dependencies that will need to be checked for 
+# and auto-installed or removed when environment setup and teardown are 
+# done.
+#
+
+Pip Deps.
+	+ flask (python restful web service framework)
+	+ pymongo (python mongoDB driver)
+	+ enum34 (python backport for python 3.4 Enum class)
+	+ pylint
+	+ pylint.pyreverse
+	+ Graphite (*)
+	+ Graphana (*)
+	+ logging
+	+ colorlog (must be colorlog[windows] package if windows due to dependency
+	on colorama).
+	+ (*Test driven development)

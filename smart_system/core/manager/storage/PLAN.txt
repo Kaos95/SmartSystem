@@ -1,0 +1,11 @@
+#
+# This document outlines the current plan for this module.
+#
+# @author: Hayden Mcparlane
+# @date: 11.12.2015
+
+	This module provides functionality for the destributed storage to which the 
+controlling system is attached. This is meant to be only accessible by the controller. 
+Storage for other components should be added to the system differently.
+
+

@@ -1,0 +1,3 @@
+#
+# Smart system manager packages
+#

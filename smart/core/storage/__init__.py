@@ -1,0 +1,3 @@
+#
+# Smart system storage components
+#
