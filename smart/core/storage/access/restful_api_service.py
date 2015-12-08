@@ -28,13 +28,9 @@ _DATA = 'data'
 def insert_sensor_data(sensor_unit_id, sensor_id):
 	try:
 		json_data = request.get_json()
-		print json_data
-		_LOG.debug("Inserting sensor data: {}".format(_JSON.dumps(json_data)))
 		database = _MONGO_CLIENT[sensor_unit_id]
 		collection = database[sensor_id]
-		_LOG.debug("Inserting data into database. {}".format(_JSON.dumps(json_data)))
 		ins_id = str(collection.insert_one(json_data).inserted_id)
-		_LOG.debug("Insertion successful")
 		return JsonStatusSignal(was_success=True, payload=ins_id).generate(), 200
 	except Exception, e:
 		#TODO: return a response with the appropriate status/error code, etc
@@ -46,7 +42,6 @@ def retrieve_sensor_data(sensor_unit_id, sensor_id):
 	try:
 		database = _MONGO_CLIENT[sensor_unit_id]
 		collection = database[sensor_id]
-		_LOG.debug("Sampling data collection...")
 		sample = collection.find_one()
 		if sample['_id'] is not None:
 			sample['_id'] = str(sample['_id'])
@@ -57,11 +52,9 @@ def retrieve_sensor_data(sensor_unit_id, sensor_id):
 @app.route('/sensors/<sensor_unit_id>/<sensor_id>/data/<data_id>/', methods = ["GET"])
 def get_sensor_data_entry(sensor_unit_id, sensor_id, data_id):
 	try:
-		_LOG.debug("Fetching data item: {} | {} | {}".format(sensor_unit_id, sensor_id, data_id ))
 		database = _MONGO_CLIENT[sensor_unit_id]
 		collection = database[sensor_id]
 		data = collection.find_one({'_id':ObjectId(data_id)})
-		_LOG.critical(data)
 		if data['_id'] is not None:
 			data['_id'] = str(data['_id'])
 		return JsonStatusSignal(was_success=True, payload=data).generate(), 200
@@ -84,7 +77,6 @@ class TestPostDataFromSensorIntoSystemController(_UNITTEST.TestCase):
 		# 1. Post the data
 		response1 =_REQ.post(_HOST_URL, data=sample_data)
 		data = _JSON.loads(response1.text)
-		_LOG.critical(str(data))
 		sample_sensor_entry_id = None
 		
 		if data["was_success"] is None:
@@ -103,7 +95,6 @@ class TestPostDataFromSensorIntoSystemController(_UNITTEST.TestCase):
 					sample_sensor_entry_id)
 				# 3. Check the contents for a match
 				data2 = _JSON.loads(response2.text)
-				_LOG.critical(data2)
 				self.assertEqual(sample_data, data2["payload"])
 
 class TestPostDataFromSensorIntoSystemControllerExceptionCatch(_UNITTEST.TestCase):
