@@ -26,25 +26,32 @@ PROGRAM_INFO = '{} v{} {} '.format(
 	PROGRAM_VERSION, 
 	VERSION_START_DATE
 	)
+ARGS = None
+
 # Parser types
 PT_BASE = 'base'
 PT_SENSOR = 'sensor'
 PT_INSERT_COMMAND = 'insert'
-ARGS = None
+
+# Parser 
+
 
 ################################################################################
 # Events
 ################################################################################
+class InsertSensorData(argparse.Action):
+	'''Event invoking insert sensor data'''
+	def __call__():
 
 ################################################################################
 # Module Classes
 ################################################################################
 
 # Base parser and parser factory
-class SmartCLIArgumentParser(argparse.ArgumentParser):
+class SmartCLIBasePerspective(argparse.ArgumentParser):
 	def __init__(self, prog=None, usage=None, description=None):
-		super(SmartCLIArgumentParser, self).__init__(
-                        prog=PROGRAM_NAME,
+		super(SmartCLIBasePerspective, self).__init__(
+                        prog=PROGRAM_INFO,
                         usage=('Interact with the smart system from the '
                                'command-line to execute jobs, store data, '
                                'and more.'),
@@ -67,49 +74,51 @@ class SmartCLIArgumentParser(argparse.ArgumentParser):
                            	)
 		self.add_argument(
 			'version',
+			dest='version',
 			type=bool,
-			help='Print the version information.', #TODO
 			action='version',
-			version=PROGRAM_VERSION
+			help='Print version information.', #TODO
+			version='%(prog)s'
 				)
-		args = 
 		return self.parse_args()
 		
-
-class SmartArgumentParserFactory(object):
-	@staticmethod
-	def get(parser):
-		'''Get a parser object.'''
-		parser = parser.lower()
-		if parser == PT_BASE:
-			parser = SmartCLIArgumentParser()
-		else:
-			raise SmartCLIException()	
-		return parser
-		
-class SmartSensorArgumentParser(argparse.ArgumentParser):
+class SmartSensorPerspective(argparse.ArgumentParser):
 	def __init__(self, prog=None, usage=None, description=None):
-		super(SensorArgumentParser, self).__init__()
+		super(SmartSensorPerspective, self).__init__(
+			prog=PROGRAM_INFO
+#                        usage=('')
+#                        description=('')
+                        )
 	
-	def parse(self):
+	def parse(self, args):
+		'''Parse the arguments'''
 		# TODO: Validate input
+		assert(len(args) > 0)
+		perspective = 
+		
 		self.add_argument(
 			PT_INSERT_COMMAND,
+			#dest='',
 			nargs=2,
 			type=str,
 			help='Insert a given json object or file' # TODO: File part --> Accept json or xml files, etc.. parse as json. -type flag?
                              #TODO: restrict options --> choices=[ 'insert', 'data' ]
 			)
 
+		self.parse_args(args)
+
 class SmartPerspectiveFactory(object):
 	@staticmethod
 	def get(perspective):
-		'''Get the perspective parser'''
+		'''Get the perspective'''
+		# TODO: Validate input
 		perspective = perspective.lower()
-		if perspective == PT_SENSOR:
-			perspective = SmartSensorArgumentParser()
+		if perspective == PT_BASE:
+                        parser = SmartCLIBasePerspective()
+		elif perspective == PT_SENSOR:
+			perspective = SmartSensorPerspective()
 		else:
-			raise SmartCLIException()
+			raise ValueError()
 		return perspective
 
 ################################################################################
@@ -119,21 +128,27 @@ class SmartCLIException(Exception):
 	pass
 
 ################################################################################
-# Module Functions
+# Module Main
 ################################################################################
 def process_arguments():
 	'''Process the command-line arguments'''
-	# TODO: refactor --> loop here?
-	# Get perspective (i.e, 'sensor' perspective, etc)
-	perspective = SmartArgumentParserFactory.get('base').parse()
+	try:
+		# TODO: refactor --> loop here?
+		# Get perspective (i.e, 'sensor' perspective, etc)
+		perspective = SmartPerspectiveFactory.get('base').parse()
 
-	# Process command within perspective
-	was_success = SmartPerspectiveFactory.get(perspective).parse()
+		# Process command within perspective (i.e, [ ... , 'insert', 'data', 
+		# <json dict>])
+		was_success = SmartPerspectiveFactory.get(str(perspective[0]))
+							.parse(perspective[1:])
 	
-	if not was_success:
-		# TODO: If cmd fails, treat appropriately
-		_L.error('command failed')
-		raise NotImplementedError()
+		if not was_success:
+			# TODO: If cmd fails, treat appropriately
+			_L.error('command failed')
+			raise NotImplementedError()
+	except Exception, e:
+		_L.critical(e)
+		sys.exit(1)
 	
 if __name__ == '__main__':
 	process_arguments()
