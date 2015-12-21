@@ -14,43 +14,31 @@ import unittest as _UT
 _L = LoggerFactory.get("core", __name__)
 
 # Example smart sensor insert data {}
-
 ################################################################################
-# Module Globals
+# Actions (Commands)
 ################################################################################
-PROGRAM_VERSION = '0.0.1'
-VERSION_START_DATE = '2015.12.20'
-PROGRAM_NAME = 'Smart Command-line Interface (SmartCLI)'
-PROGRAM_INFO = '{} v{} {} '.format(
-	PROGRAM_NAME,
-	PROGRAM_VERSION, 
-	VERSION_START_DATE
-	)
-ARGS = None
-
-# Parser types
-PT_BASE = 'base'
-PT_SENSOR = 'sensor'
-PT_INSERT_COMMAND = 'insert'
-
-# Parser 
-
-
-################################################################################
-# Events
-################################################################################
+INVOKED = 'command {} invoked'
 class InsertSensorData(argparse.Action):
-	'''Event invoking insert sensor data'''
-	def __call__():
+	'''Invoke insert sensor data'''
+	@staticmethod
+	def name():
+		return self.__class__.__name__
+
+	def __call__(): #TODO: pass data param
+		_L.info(INVOKED.format(self.__class__.__name__))
+
+# Functions ####################################################################
+def construct_key(*components):
+	return ':'.join(*components)
+
+def class_name(class_):
 
 ################################################################################
 # Module Classes
 ################################################################################
-
-# Base parser and parser factory
-class SmartCLIBasePerspective(argparse.ArgumentParser):
+class SmartCLIPerspective(argparse.ArgumentParser):
 	def __init__(self, prog=None, usage=None, description=None):
-		super(SmartCLIBasePerspective, self).__init__(
+		super(SmartCLIPerspective, self).__init__(
                         prog=PROGRAM_INFO,
                         usage=('Interact with the smart system from the '
                                'command-line to execute jobs, store data, '
@@ -59,15 +47,20 @@ class SmartCLIBasePerspective(argparse.ArgumentParser):
                               'start a core controller and storage '
                               'node before using these commands.')
                         )
-
-	def parse(self):
+		
+	# Custom function for command parse and invokation
+	def invoke(self, *command):
 		'''Parse the arguments'''
 		# TODO: Restrict arguments --> choices=[...]
+
+		# Construct command key
+		command = construct_key(*command)
+
 		self.add_argument(
 			PT_SENSOR,
 			dest='perspective',
 			type=list,
-                        action='append',
+                        action='store',
                         nargs='+',
 			help='Issue commands to the smart system acting as a sensor.'
                         #TODO: restrict options --> choices=[ 'insert', 'data' ]
@@ -114,8 +107,8 @@ class SmartPerspectiveFactory(object):
 		# TODO: Validate input
 		perspective = perspective.lower()
 		if perspective == PT_BASE:
-                        parser = SmartCLIBasePerspective()
-		elif perspective == PT_SENSOR:
+                        perspective = SmartCLIPerspective()
+		elif perspective == PT_SENSOR: #TODO: remove? --> only base perspective?
 			perspective = SmartSensorPerspective()
 		else:
 			raise ValueError()
@@ -130,6 +123,42 @@ class SmartCLIException(Exception):
 ################################################################################
 # Module Main
 ################################################################################
+def initialize():
+	'''Initialize the module'''
+	
+	# Setup module globals
+	PROGRAM_VERSION = '0.0.1'
+	VERSION_START_DATE = '2015.12.20'
+	PROGRAM_NAME = 'Smart Command-line Interface (SmartCLI)'
+	PROGRAM_INFO = '{} v{} {} '.format(
+	        PROGRAM_NAME,
+        	PROGRAM_VERSION,
+	        VERSION_START_DATE
+        	)
+
+	# Perspective types
+	PT_BASE = 'base'
+
+	# System perspectives
+	PT_SENSOR = 'sensor'
+
+	# System perspective commands
+	PT_INSERT_COMMAND = 'insert'
+
+	# Sub Domain
+	SD_DATA = 'data'
+
+	# Commands
+	INSERT_SENSOR_DATA = [ PT_SENSOR, PT_INSERT_COMMAND, SD_DATA ]
+
+	COMMANDS = {
+        	INSERT_SENSOR_DATA : InsertSensorData
+	}
+
+	# Command catalog
+	CC = { construct_key(*components) : command for command_components : command 
+								in COMMANDS }	
+
 def process_arguments():
 	'''Process the command-line arguments'''
 	try:
