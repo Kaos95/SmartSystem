@@ -9,3 +9,4 @@
 { 'log_level':'CRITICAL ', 'time_stamp':'12/22/2015 10:51:33 AM CST', 'logger_name':'__main__    ', 'path_to_file':'smart.py', 'function_name':'process_arguments', 'line_number':'143', 'message':'' }
 { 'log_level':'CRITICAL ', 'time_stamp':'12/22/2015 10:51:52 AM CST', 'logger_name':'__main__    ', 'path_to_file':'smart.py', 'function_name':'process_arguments', 'line_number':'143', 'message':'' }
 { 'log_level':'CRITICAL ', 'time_stamp':'12/22/2015 10:52:06 AM CST', 'logger_name':'__main__    ', 'path_to_file':'smart.py', 'function_name':'process_arguments', 'line_number':'143', 'message':''dict' object has no attribute 'contains_key'' }
+{ 'log_level':'CRITICAL ', 'time_stamp':'12/22/2015 10:16:56 PM CST', 'logger_name':'__main__    ', 'path_to_file':'smart.py', 'function_name':'process_arguments', 'line_number':'143', 'message':''dict' object has no attribute 'contains_key'' }
