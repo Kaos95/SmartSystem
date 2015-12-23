@@ -27,7 +27,7 @@ _DATA = 'data'
 @app.route('/sensors/<sensor_unit_id>/<sensor_id>/data/', methods=['POST'])
 def insert_sensor_data(sensor_unit_id, sensor_id):
 	try:
-		json_data = _JSON.loads(request.data)
+		json_data = request.get_json()
 		database = _MONGO_CLIENT[sensor_unit_id]
 		collection = database[sensor_id]
 		ins_id = str(collection.insert_one(json_data).inserted_id)
