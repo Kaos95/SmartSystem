@@ -28,17 +28,13 @@ INSERTING_DATA = "inserting sensor data -> {}"
 FETCHING_DATA = "fetching sensor data -> id {}"
 SUCCESS = "{} successful"
 
-@app.route("/{}/{}/{}/".format(G.REST_SENSORS, G.REST_SENSOR, G.REST_DATA), 
+@app.route("/{}/<unit_id>/<sensor_id>/data/".format(G.REST_SENSORS), 
 	methods=["POST"])
-def insert_sensor_data_item():
+def insert_sensor_data_item(unit_id, sensor_id):
 	try:
 		# TODO: Validate input -> If entries contain invalid characters (i.e,
 		#       a key string containing a ':' or something)
-		json_payload = request.json
-		for key in G.STANDARD_DATA_KEYS:
-			assert( key in json_payload )
-		unit_id = json_payload.get(G.UNIT_ID)
-		sensor_id = json_payload.get(G.SENSOR_ID)
+		json_payload = json.loads(request.data)
 		database = MONGO_CLIENT[ unit_id ]
 		collection = database[ sensor_id ]
 		data = json_payload[G.PAYLOAD]
@@ -51,16 +47,10 @@ def insert_sensor_data_item():
 		LOG.error(e)
 		return JsonStatusSignal(was_success=False, error_occurred=True).generate(), 500
 
-@app.route("/{}/{}/{}/<data_id>".format(G.REST_SENSORS, G.REST_SENSOR, G.REST_DATA), 
+@app.route("/{}/<unit_id>/<sensor_id>/<data_id>/".format(G.REST_SENSORS), 
 	methods = ["GET"])
-def read_sensor_data_item(data_id):
+def read_sensor_data_item(unit_id, sensor_id, data_id):
 	try:
-		json_payload = json.loads(request.data)
-                for key in G.STANDARD_DATA_KEYS:
-                        assert( key in json_payload )
-		data_id = json_payload[G.PAYLOAD]
-		unit_id = json_payload[G.UNIT_ID]
-		sensor_id = json_payload[G.SENSOR_ID]
                 database = MONGO_CLIENT[ unit_id ]
                 collection = database[ sensor_id ]
 		LOG.info(FETCHING_DATA.format(data_id))
