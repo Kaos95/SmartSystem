@@ -6,7 +6,10 @@
 ################################################################################
 import abc as _ABC
 import argparse
+import ast
+import codecs as codecs
 import collections
+import json as json
 from smart.core.system_logging import LoggerFactory
 import smart.globals as G
 import smart.sensor.commands as SC
@@ -17,15 +20,24 @@ import unittest as _UT
 ################################################################################
 # Commands
 ################################################################################
+TEST_UNIT_ID = 'test_unit_id 12.23.2015'
+TEST_SENSOR_ID = 'test_sensor_id 12.23.2015'
 def insert_sensor_data(commands):
 	'''Invoke the insert sensor data controller command.'''
 	assert(isinstance(commands, list))
 	assert(len(commands) > 3)
-	assert(isinstance(commands[3], dict))
-
+#	assert(isinstance(commands[3], dict))
+	print "IN insert_sensor_data(...) : {}".format(commands)
+	print commands[-1]
+	data = ast.literal_eval( commands[-1].encode('utf-8') )
+	payload = dict()
+	payload[G.PAYLOAD] = data
+	payload[G.UNIT_ID] = TEST_UNIT_ID # TODO: FINISH
+	payload[G.SENSOR_ID] = TEST_SENSOR_ID 
+	print payload 
 	# TODO: Ensure dict keys and values are as needed and aren't a
 	#       security concern
-	command = SC.InsertSensorData(data=commands[-1])
+	command = SC.InsertSensorData(data=payload)
 	invoke_command(command)
         LOG.info(INVOKED.format(command.__class__.__name__))
 
@@ -41,16 +53,10 @@ def construct_key(components):
 INVOKED = '{} successfully invoked'
 def invoke_command(command):
 	'''Invoke a desired sensor command invoker.'''
-	assert(isinstance(command, smart.sensor.commands.SmartSystemCommand))
-	if command.is_ready():
-		command.invoke()
-		LOG.info(INVOKED.format(command.__class__.__name__))
-	else:
-		raise SmartCLIException(
-			"{} was not ready for invokation".format(
-						command.__class__.__name__
-			)
-		)
+#	assert(isinstance(command, smart.sensor.commands.SmartSystemCommand))
+	print "In invoke_command(...) : Invoking"
+	command.invoke()
+	LOG.info(INVOKED.format(command.__class__.__name__))
 
 ################################################################################
 # Module Exceptions
@@ -123,16 +129,20 @@ def process_arguments():
 		)
 		arguments = parser.parse_args()
 		commands = arguments.commands
-
+		print commands[:]
 		# TODO: Validate input
+		command = construct_key(
+			commands[:] if len(commands) < 2 else commands[:-1]
+		)
+		print command
 		
-		command = construct_key(commands[:-1])
 		was_success = False
 
 		if command in CC:
 			# Get the command from the catalog and pass the terminal
 			# commands as arguments to that command
 			CC[command](commands[:])
+			print CC[command].__class__.__name__
 			was_success = True
 		if not was_success:
 			# TODO: If cmd fails, treat appropriately

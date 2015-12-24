@@ -3,6 +3,7 @@
 #
 # @author: Hayden McParlane
 # @creation-date: 12.22.2015
+import copy
 import json as json
 from pypatterns import commander as commander
 import requests
@@ -39,7 +40,7 @@ class InsertSensorData(SmartSystemCommand):
 		assert( isinstance(validated_data.get(PAYLOAD), dict))
 		assert( len(validated_data.get(PAYLOAD)) > 0 )
 		for key in G.STANDARD_DATA_KEYS:
-			assert( validated_data.contains_key( key ) )
+			assert( key in validated_data )
 		self._data = validated_data
 
 	def execute(self, **kwargs):
@@ -47,7 +48,10 @@ class InsertSensorData(SmartSystemCommand):
 		jdata = self.data()
 		print jdata
 		response = requests.post(
-			"{}{}".format(REST_BASE, G.REST_DATA), 
+			"{}/{}/{}/{}/".format(  REST_BASE, 
+					G.REST_SENSORS, 
+					G.REST_SENSOR,
+				 	G.REST_DATA ), 
 			data=json.dumps(jdata)
 		)
 		print response.text
