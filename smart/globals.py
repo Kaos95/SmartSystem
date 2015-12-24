@@ -4,6 +4,9 @@
 # @author: Hayden McParlane
 # @creation-date: 12.23.2015
 
+# JSON response standard format
+WAS_SUCCESS = "was_success"
+
 # JSON data format
 UNIT_ID = 'unit_id'
 SENSOR_ID = 'sensor_id'

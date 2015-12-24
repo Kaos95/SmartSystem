@@ -20,10 +20,6 @@ API = None
 REST_BASE = G.REST_BASE_STORAGE
 LOG = LoggerFactory.get('core', __name__).payload
 
-UNIT_ID = G.UNIT_ID
-SENSOR_ID = G.SENSOR_ID
-PAYLOAD = G.PAYLOAD
-
 EXECUTING = "executing command: {}"
 class SmartSystemCommand(commander.Command):
 	def __init__(self, **kwargs):
@@ -34,19 +30,25 @@ class InsertSensorData(SmartSystemCommand):
 		super(InsertSensorData, self).__init__()
 		validated_data = kwargs['data']
 		assert(len(validated_data) > 2)
-		assert( validated_data.get(UNIT_ID) != "")
-		assert( validated_data.get(SENSOR_ID) != "")
-		assert( len(validated_data.get(PAYLOAD)) > 0 )
+		assert( validated_data.get(G.UNIT_ID) != "")
+		assert( validated_data.get(G.SENSOR_ID) != "")
+		assert( len(validated_data.get(G.PAYLOAD)) > 0 )
 		for key in G.STANDARD_DATA_KEYS:
 			assert( key in validated_data )
 		self._data = validated_data
+
+	def invoke(self, **kwargs):
+                '''Invoke the command. Calling this method signifies to the 
+                   commander that that instance is ready for optimization
+                   and execution'''
+		return self.execute()
+
 
 	def execute(self, **kwargs):
 		LOG.info(EXECUTING.format(self.__class__.__name__))
 		jdata = self.data()
 		unit_id = jdata[G.UNIT_ID]
 		sensor_id = jdata[G.SENSOR_ID]
-		print jdata
 		response = requests.post(
 			"{}/{}/{}/{}/{}/".format(  REST_BASE, 
 					G.REST_SENSORS,
@@ -55,13 +57,14 @@ class InsertSensorData(SmartSystemCommand):
 				 	G.REST_DATA ), 
 			data=json.dumps(jdata)
 		)
-		print response.text
-		LOG.info('network response : {}'.format(response.text))
 		if response.status_code != 200:
-			LOG.error('error: Response status: {}'.format(response.status_code))
+			LOG.error('error: status code: {}'.format(response.status_code))
 			raise commander.CommandExecutionException()
-			return False # Is this necessary?
 		LOG.info('{} successful'.format(self.__class__.__name__))
+		data = json.loads(response.text)
+		data_id = data[G.PAYLOAD]
+		LOG.info('network response : {}'.format(data))
+		return { G.WAS_SUCCESS:True, G.PAYLOAD:data_id }
 
 	def data(self):
 		'''Get a deep copy of the data'''

@@ -21,6 +21,7 @@ import sys
 ################################################################################
 TEST_UNIT_ID = 'test_unit_id'
 TEST_SENSOR_ID = 'test_sensor_id'
+OP_SUCCESS = 'success'
 def insert_sensor_data(commands):
 	'''Invoke the insert sensor data controller command.'''
 	assert(isinstance(commands, list))
@@ -34,8 +35,10 @@ def insert_sensor_data(commands):
 	# TODO: Ensure dict keys and values are as needed and aren't a
 	#       security concern
 	command = SC.InsertSensorData(data=payload)
-	invoke_command(command)
+	result = dict(invoke_command(command))
+	print "{} {}".format(OP_SUCCESS, result[G.PAYLOAD])
         LOG.info(INVOKED.format(command.__class__.__name__))
+	return result
 
 def print_version(commands):
 	print PROGRAM_INFO
@@ -50,8 +53,9 @@ INVOKED = '{} successfully invoked'
 def invoke_command(command):
 	'''Invoke a desired sensor command invoker.'''
 #	assert(isinstance(command, smart.sensor.commands.SmartSystemCommand))
-	command.invoke()
+	result = command.invoke()
 	LOG.info(INVOKED.format(command.__class__.__name__))
+	return result
 
 ################################################################################
 # Module Exceptions
@@ -129,10 +133,11 @@ def process_arguments():
 			commands[:] if len(commands) < 2 else commands[:-1]
 		)
 		was_success = False
+		result = None
 		if command in CC:
 			# Get the command from the catalog and pass the terminal
 			# commands as arguments to that command
-			CC[command](commands[:])
+			result = CC[command](commands[:])
 			was_success = True
 		if not was_success:
 			# TODO: If cmd fails, treat appropriately
