@@ -1,3 +1,4 @@
+#!/usr/bin/python
 ################################################################################
 # The command-line interface (CLI) into the smart system
 #
@@ -6,78 +7,55 @@
 ################################################################################
 import abc as _ABC
 import argparse
+import ast
+import codecs as codecs
 import collections
+import json as json
 from smart.core.system_logging import LoggerFactory
-from smart.perspectives import Perspective
+import smart.globals as G
 import smart.sensor.commands as SC
 import sys
-import unittest as _UT
-
 # Example CLI use: smart sensor insert data {}
 ################################################################################
-# Actions (Commands)
+# Commands
 ################################################################################
-INVOKED = '{} invoked'
-class InsertSensorData(argparse.Action):
-	'''Invoke insert sensor data'''
-	def __call__(self, parser, namespace, values, option_string=None): #TODO: pass data param
-		_L.info(INVOKED.format(self.__class__.__name__))
-		_L.info('values: {}'.format(values))
-		print values[-1]
-		command = SC.InsertSensorData(data=str(values[-1]))
-		command.invoke()
+TEST_UNIT_ID = 'test_unit_id'
+TEST_SENSOR_ID = 'test_sensor_id'
+OP_SUCCESS = 'success'
+def insert_sensor_data(commands):
+	'''Invoke the insert sensor data controller command.'''
+	assert(isinstance(commands, list))
+	assert(len(commands) > 3)
+#	assert(isinstance(commands[3], dict))
+	data = ast.literal_eval( commands[-1].encode('utf-8') )
+	payload = dict()
+	payload[G.PAYLOAD] = data
+	payload[G.UNIT_ID] = TEST_UNIT_ID # TODO: FINISH
+	payload[G.SENSOR_ID] = TEST_SENSOR_ID 
+	# TODO: Ensure dict keys and values are as needed and aren't a
+	#       security concern
+	command = SC.InsertSensorData(data=payload)
+	result = dict(invoke_command(command))
+	print "{} {}".format(OP_SUCCESS, result[G.PAYLOAD])
+        LOG.info(INVOKED.format(command.__class__.__name__))
+	return result
 
-# Functions ####################################################################
-def construct_key(*components):
+def print_version(commands):
+	print PROGRAM_INFO
+################################################################################
+# Functions
+################################################################################
+def construct_key(components):
 	key = ':'.join(components)
 	return key
 
-################################################################################
-# Module Classes
-################################################################################
-class SmartCLIPerspective(argparse.ArgumentParser):
-	def __init__(self, prog=None, usage=None, description=None):
-		super(SmartCLIPerspective, self).__init__(
-                        prog=PROGRAM_INFO,
-                        usage=('Interact with the smart system from the '
-                               'command-line to execute jobs, store data, '
-                               'and more.'),
-                        description=('Make sure to install, configure and '
-                              'start a core controller and storage '
-                              'node before using these commands.')
-                        )
-		
-	# Custom function for command parse and invokation
-	def invoke(self, *command, **kwargs):
-		'''Parse the arguments'''
-		# TODO: Restrict arguments --> choices=[...]
-		self.add_argument(
-			'--{}'.format(PT_SENSOR),
-			dest='perspective',
-                        action=InsertSensorData,
-                        nargs='+',
-			help='Issue commands to the smart system acting as a sensor.'
-                        #TODO: restrict options --> choices=[ 'insert', 'data' ]
-                           	)
-		self.add_argument(
-			'--version',
-			action='version',
-			help='Print version information.', #TODO
-			version='%(prog)s'
-				)
-		arguments = self.parse_args()
-		
-class SmartPerspectiveFactory(object):
-	@staticmethod
-	def get(perspective):
-		'''Get the perspective'''
-		# TODO: Validate input
-		perspective = perspective.lower()
-		if perspective == PT_BASE:
-                        perspective = SmartCLIPerspective()
-		else:
-			raise ValueError()
-		return perspective
+INVOKED = '{} successfully invoked'
+def invoke_command(command):
+	'''Invoke a desired sensor command invoker.'''
+#	assert(isinstance(command, smart.sensor.commands.SmartSystemCommand))
+	result = command.invoke()
+	LOG.info(INVOKED.format(command.__class__.__name__))
+	return result
 
 ################################################################################
 # Module Exceptions
@@ -85,40 +63,42 @@ class SmartPerspectiveFactory(object):
 class SmartCLIException(Exception):
 	pass
 
-
 ################################################################################
 # Globals
 ################################################################################
-_L = LoggerFactory.get("core", __name__).payload
+LOG = LoggerFactory.get("core", __name__).payload
 
 # Setup module globals
 PROGRAM_VERSION = '0.0.1'
-VERSION_START_DATE = '2015.12.20'
+VERSION_START_DATE = '12.20.2015'
 PROGRAM_NAME = 'Smart Command-line Interface (SmartCLI)'
-PROGRAM_INFO = '{} v{} {} '.format(
+PROGRAM_INFO = '{}\nv{} {}\nCopywrite (c) 2015, {}'.format(
         PROGRAM_NAME,
         PROGRAM_VERSION,
-        VERSION_START_DATE
+        VERSION_START_DATE,
+	"Hayden McParlane"
 )
 
-# Perspective types
-PT_BASE = 'base'
+# Misc Commands
+CMD_VERSION = 'version'
 
 # System perspectives
-PT_SENSOR = 'sensor'
+CMD_SENSOR = 'sensor'
 
 # System perspective commands
-PT_INSERT_COMMAND = 'insert'
+CMD_INSERT = 'insert'
 
 # Sub Domain
-SD_DATA = 'data'
+CMD_DATA = 'data'
 
 # Commands
-INSERT_SENSOR_DATA = [PT_SENSOR, PT_INSERT_COMMAND, SD_DATA]
+INSERT_SENSOR_DATA = [CMD_SENSOR, CMD_INSERT, CMD_DATA]
+PRINT_VERSION = [CMD_VERSION]
 
 # Command Catalog
 CC = {
-        construct_key(*INSERT_SENSOR_DATA) : InsertSensorData
+        construct_key(INSERT_SENSOR_DATA) : insert_sensor_data,
+	construct_key(PRINT_VERSION) : print_version
 }
 
 ################################################################################
@@ -129,28 +109,43 @@ def process_arguments():
 	try:
 		# TODO: refactor --> loop here?
 		# Get perspective (i.e, 'sensor' perspective, etc)
-		perspective = SmartPerspectiveFactory.get('base').invoke()
+		parser = argparse.ArgumentParser(
+			prog=PROGRAM_INFO,
+                        usage=('Interact with the smart system from the '
+                               'command-line to execute jobs, store data, '
+                               'and more.'),
+                        description=('Make sure to install, configure and '
+                              'start a core controller and storage '
+                              'node before using these commands.')
+		)
+		parser.add_argument(
+			'commands',
+			type=str,
+			action='store',
+			nargs='+',
+# TODO -->		choices=[],
+			help='Interact with the smart system by entering commands.'
+		)
+		arguments = parser.parse_args()
+		commands = arguments.commands
+		# TODO: Validate input
+		command = construct_key(
+			commands[:] if len(commands) < 2 else commands[:-1]
+		)
 		was_success = False
-
-		# Process command
-		if CC.contains_key():
-			command = CC.invoke()
+		result = None
+		if command in CC:
+			# Get the command from the catalog and pass the terminal
+			# commands as arguments to that command
+			result = CC[command](commands[:])
+			was_success = True
 		if not was_success:
 			# TODO: If cmd fails, treat appropriately
-			_L.error('command failed')
+			LOG.error('command failed')
 			raise NotImplementedError()
 	except Exception, e:
-		_L.critical(e)
+		LOG.critical(e)
 		sys.exit(1)
 	
 if __name__ == '__main__':
 	process_arguments()
-
-################################################################################
-# Module Tests
-###############################################################################
-import subprocess
-
-# TODO: Test each and every CLI command
-class TestArgumentProcessing(_UT.TestCase):
-	pass

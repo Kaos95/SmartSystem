@@ -5,61 +5,62 @@
 
 from bson.objectid import ObjectId
 from flask import Flask
-import json as _JSON
+import json as json
 app = Flask(__name__)
 
-import pymongo as _PYMONGO
+import pymongo as PYMONGO
 from flask import request
 import requests as _REQ
 import os as _OS
-from smart.core.system_logging import LoggerFactory as _LOG_FACTORY
+from smart.core.system_logging import LoggerFactory as LOG_FACTORY
 from smart.core.signals import JsonStatusSignal
+import smart.globals as G
 import sys
 import time as _TIME
 import unittest as _UNITTEST
 
 # Initialize the logger
 # TODO: Replace .payload syntax with appropriate signal-processor relationship
-_LOG = _LOG_FACTORY.get("core", __name__).payload
-_MONGO_CLIENT = _PYMONGO.MongoClient()
-_DATA = 'data'
+LOG = LOG_FACTORY.get("core", __name__).payload
+MONGO_CLIENT = PYMONGO.MongoClient()
 
-@app.route('/sensors/<sensor_unit_id>/<sensor_id>/data/', methods=['POST'])
-def insert_sensor_data(sensor_unit_id, sensor_id):
+INSERTING_DATA = "inserting sensor data -> {}"
+FETCHING_DATA = "fetching sensor data -> id {}"
+SUCCESS = "{} successful"
+
+@app.route("/{}/<unit_id>/<sensor_id>/data/".format(G.REST_SENSORS), 
+	methods=["POST"])
+def insert_sensor_data_item(unit_id, sensor_id):
 	try:
-		json_data = request.get_json()
-		database = _MONGO_CLIENT[sensor_unit_id]
-		collection = database[sensor_id]
-		ins_id = str(collection.insert_one(json_data).inserted_id)
+		# TODO: Validate input -> If entries contain invalid characters (i.e,
+		#       a key string containing a ':' or something)
+		json_payload = json.loads(request.data)
+		database = MONGO_CLIENT[ unit_id ]
+		collection = database[ sensor_id ]
+		data = json_payload[G.PAYLOAD]
+		LOG.info(INSERTING_DATA.format(data))
+		ins_id = str(collection.insert_one(data).inserted_id)
+		LOG.info(SUCCESS.format("insert"))
 		return JsonStatusSignal(was_success=True, payload=ins_id).generate(), 200
 	except Exception, e:
 		#TODO: return a response with the appropriate status/error code, etc
-		_LOG.warn(e)
+		LOG.error(e)
 		return JsonStatusSignal(was_success=False, error_occurred=True).generate(), 500
 
-@app.route('/sensors/<sensor_unit_id>/<sensor_id>/data/', methods=["GET"])
-def retrieve_sensor_data(sensor_unit_id, sensor_id):
+@app.route("/{}/<unit_id>/<sensor_id>/<data_id>/".format(G.REST_SENSORS), 
+	methods = ["GET"])
+def read_sensor_data_item(unit_id, sensor_id, data_id):
 	try:
-		database = _MONGO_CLIENT[sensor_unit_id]
-		collection = database[sensor_id]
-		sample = collection.find_one()
-		if sample['_id'] is not None:
-			sample['_id'] = str(sample['_id'])
-	except Exception, e:
-		_LOG.warn(e)
-		return JsonStatusSignal(was_success=False, error_occurred=True, ).generate(), 500
-
-@app.route('/sensors/<sensor_unit_id>/<sensor_id>/data/<data_id>/', methods = ["GET"])
-def get_sensor_data_entry(sensor_unit_id, sensor_id, data_id):
-	try:
-		database = _MONGO_CLIENT[sensor_unit_id]
-		collection = database[sensor_id]
-		data = collection.find_one({'_id':ObjectId(data_id)})
+                database = MONGO_CLIENT[ unit_id ]
+                collection = database[ sensor_id ]
+		LOG.info(FETCHING_DATA.format(data_id))
+		data = collection.find_one( {'_id':ObjectId( data_id )}	)
+		LOG.info(SUCCESS.format("fetch"))
 		if data['_id'] is not None:
 			data['_id'] = str(data['_id'])
 		return JsonStatusSignal(was_success=True, payload=data).generate(), 200
 	except Exception, e:
-                _LOG.warn(e)
+                LOG.warn(e)
                 return JsonStatusSignal(was_success=False, error_occurred=True).generate(), 500
 
 ###############################################################################
@@ -76,7 +77,7 @@ class TestPostDataFromSensorIntoSystemController(_UNITTEST.TestCase):
 		
 		# 1. Post the data
 		response1 =_REQ.post(_HOST_URL, data=sample_data)
-		data = _JSON.loads(response1.text)
+		data = json.loads(response1.text)
 		sample_sensor_entry_id = None
 		
 		if data["was_success"] is None:
@@ -94,7 +95,7 @@ class TestPostDataFromSensorIntoSystemController(_UNITTEST.TestCase):
 				response2 = _REQ.get(_HOST_URL + "/" + 
 					sample_sensor_entry_id)
 				# 3. Check the contents for a match
-				data2 = _JSON.loads(response2.text)
+				data2 = json.loads(response2.text)
 				self.assertEqual(sample_data, data2["payload"])
 
 class TestPostDataFromSensorIntoSystemControllerExceptionCatch(_UNITTEST.TestCase):

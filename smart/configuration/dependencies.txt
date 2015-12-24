@@ -15,4 +15,14 @@ Pip Deps.
 	+ logging
 	+ colorlog (must be colorlog[windows] package if windows due to dependency
 	on colorama).
+
+3rd Party Deps.
+	+ (My project) DataHawk
+	+ (My project) pypatterns
+	+ (My project) 
+
+Misc.
 	+ (*Test driven development)
+
+
+
