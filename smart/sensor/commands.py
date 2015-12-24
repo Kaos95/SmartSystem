@@ -52,7 +52,7 @@ class InsertSensorData(SmartSystemCommand):
 					G.REST_SENSORS, 
 					G.REST_SENSOR,
 				 	G.REST_DATA ), 
-			data=json.dumps(jdata)
+			json=json.dumps(jdata)
 		)
 		print response.text
 		LOG.info('network response : {}'.format(response.text))

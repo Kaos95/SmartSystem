@@ -34,7 +34,7 @@ def insert_sensor_data_item():
 	try:
 		# TODO: Validate input -> If entries contain invalid characters (i.e,
 		#       a key string containing a ':' or something)
-		json_payload = json.loads(request.data)
+		json_payload = request.json
 		for key in G.STANDARD_DATA_KEYS:
 			assert( key in json_payload )
 		unit_id = json_payload.get(G.UNIT_ID)
