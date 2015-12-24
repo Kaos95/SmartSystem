@@ -28,16 +28,19 @@ INSERTING_DATA = "inserting sensor data -> {}"
 FETCHING_DATA = "fetching sensor data -> id {}"
 SUCCESS = "{} successful"
 
-@app.route("/{}/{}/{}".format(G.REST_SENSORS, G.REST_SENSOR, G.REST_DATA), 
+@app.route("/{}/{}/{}/".format(G.REST_SENSORS, G.REST_SENSOR, G.REST_DATA), 
 	methods=["POST"])
 def insert_sensor_data_item():
 	try:
+		# TODO: Validate input -> If entries contain invalid characters (i.e,
+		#       a key string containing a ':' or something)
 		json_payload = json.loads(request.data)
-		assert( isinstance(json_payload, dict) )
 		for key in G.STANDARD_DATA_KEYS:
-			assert( json_payload.contains_key( key ) )
-		database = MONGO_CLIENT[ json_payload[G.UNIT_ID] ]
-		collection = database[ json_payload[G.SENSOR_ID] ]
+			assert( key in json_payload )
+		unit_id = json_payload.get(G.UNIT_ID)
+		sensor_id = json_payload.get(G.SENSOR_ID)
+		database = MONGO_CLIENT[ unit_id ]
+		collection = database[ sensor_id ]
 		data = json_payload[G.PAYLOAD]
 		LOG.info(INSERTING_DATA.format(data))
 		ins_id = str(collection.insert_one(data).inserted_id)
@@ -48,17 +51,18 @@ def insert_sensor_data_item():
 		LOG.error(e)
 		return JsonStatusSignal(was_success=False, error_occurred=True).generate(), 500
 
-@app.route("/{}/{}/{}/".format(G.REST_SENSORS, G.REST_SENSOR, G.REST_DATA), 
+@app.route("/{}/{}/{}/<data_id>".format(G.REST_SENSORS, G.REST_SENSOR, G.REST_DATA), 
 	methods = ["GET"])
-def read_sensor_data_item():
+def read_sensor_data_item(data_id):
 	try:
 		json_payload = json.loads(request.data)
-                assert( isinstance(json_payload, dict) )
                 for key in G.STANDARD_DATA_KEYS:
-                        assert( json_payload.contains_key( key ) )
+                        assert( key in json_payload )
 		data_id = json_payload[G.PAYLOAD]
-                database = MONGO_CLIENT[ json_payload[G.UNIT_ID] ]
-                collection = database[ json_payload[G.SENSOR_ID] ]
+		unit_id = json_payload[G.UNIT_ID]
+		sensor_id = json_payload[G.SENSOR_ID]
+                database = MONGO_CLIENT[ unit_id ]
+                collection = database[ sensor_id ]
 		LOG.info(FETCHING_DATA.format(data_id))
 		data = collection.find_one( {'_id':ObjectId( data_id )}	)
 		LOG.info(SUCCESS.format("fetch"))

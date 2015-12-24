@@ -20,8 +20,8 @@ import unittest as _UT
 ################################################################################
 # Commands
 ################################################################################
-TEST_UNIT_ID = 'test_unit_id 12.23.2015'
-TEST_SENSOR_ID = 'test_sensor_id 12.23.2015'
+TEST_UNIT_ID = 'test_unit_id'
+TEST_SENSOR_ID = 'test_sensor_id'
 def insert_sensor_data(commands):
 	'''Invoke the insert sensor data controller command.'''
 	assert(isinstance(commands, list))
