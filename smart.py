@@ -133,6 +133,7 @@ def process_arguments():
 			# Get the command from the catalog and pass the terminal
 			# commands as arguments to that command
 			CC[command](commands[:])
+			was_success = True
 		if not was_success:
 			# TODO: If cmd fails, treat appropriately
 			LOG.error('command failed')

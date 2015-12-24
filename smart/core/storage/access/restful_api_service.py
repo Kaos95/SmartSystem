@@ -48,7 +48,7 @@ def insert_sensor_data_item():
 		LOG.error(e)
 		return JsonStatusSignal(was_success=False, error_occurred=True).generate(), 500
 
-@app.route("/{}/{}/{}/".format(REST_SENSORS, REST_SENSOR, REST_DATA), 
+@app.route("/{}/{}/{}/".format(G.REST_SENSORS, G.REST_SENSOR, G.REST_DATA), 
 	methods = ["GET"])
 def read_sensor_data_item():
 	try:
