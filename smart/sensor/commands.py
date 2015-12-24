@@ -33,11 +33,9 @@ class InsertSensorData(SmartSystemCommand):
 	def __init__(self, **kwargs):
 		super(InsertSensorData, self).__init__()
 		validated_data = kwargs['data']
-		assert(isinstance(validated_data, dict))
 		assert(len(validated_data) > 2)
 		assert( validated_data.get(UNIT_ID) != "")
 		assert( validated_data.get(SENSOR_ID) != "")
-		assert( isinstance(validated_data.get(PAYLOAD), dict))
 		assert( len(validated_data.get(PAYLOAD)) > 0 )
 		for key in G.STANDARD_DATA_KEYS:
 			assert( key in validated_data )
@@ -46,13 +44,16 @@ class InsertSensorData(SmartSystemCommand):
 	def execute(self, **kwargs):
 		LOG.info(EXECUTING.format(self.__class__.__name__))
 		jdata = self.data()
+		unit_id = jdata[G.UNIT_ID]
+		sensor_id = jdata[G.SENSOR_ID]
 		print jdata
 		response = requests.post(
-			"{}/{}/{}/{}/".format(  REST_BASE, 
-					G.REST_SENSORS, 
-					G.REST_SENSOR,
+			"{}/{}/{}/{}/{}/".format(  REST_BASE, 
+					G.REST_SENSORS,
+					unit_id,
+					sensor_id,
 				 	G.REST_DATA ), 
-			json=json.dumps(jdata)
+			data=json.dumps(jdata)
 		)
 		print response.text
 		LOG.info('network response : {}'.format(response.text))

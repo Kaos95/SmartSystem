@@ -1,3 +1,4 @@
+#!/usr/bin/python
 ################################################################################
 # The command-line interface (CLI) into the smart system
 #
@@ -14,8 +15,6 @@ from smart.core.system_logging import LoggerFactory
 import smart.globals as G
 import smart.sensor.commands as SC
 import sys
-import unittest as _UT
-
 # Example CLI use: smart sensor insert data {}
 ################################################################################
 # Commands
@@ -27,14 +26,11 @@ def insert_sensor_data(commands):
 	assert(isinstance(commands, list))
 	assert(len(commands) > 3)
 #	assert(isinstance(commands[3], dict))
-	print "IN insert_sensor_data(...) : {}".format(commands)
-	print commands[-1]
 	data = ast.literal_eval( commands[-1].encode('utf-8') )
 	payload = dict()
 	payload[G.PAYLOAD] = data
 	payload[G.UNIT_ID] = TEST_UNIT_ID # TODO: FINISH
 	payload[G.SENSOR_ID] = TEST_SENSOR_ID 
-	print payload 
 	# TODO: Ensure dict keys and values are as needed and aren't a
 	#       security concern
 	command = SC.InsertSensorData(data=payload)
@@ -54,7 +50,6 @@ INVOKED = '{} successfully invoked'
 def invoke_command(command):
 	'''Invoke a desired sensor command invoker.'''
 #	assert(isinstance(command, smart.sensor.commands.SmartSystemCommand))
-	print "In invoke_command(...) : Invoking"
 	command.invoke()
 	LOG.info(INVOKED.format(command.__class__.__name__))
 
@@ -73,7 +68,7 @@ LOG = LoggerFactory.get("core", __name__).payload
 PROGRAM_VERSION = '0.0.1'
 VERSION_START_DATE = '12.20.2015'
 PROGRAM_NAME = 'Smart Command-line Interface (SmartCLI)'
-PROGRAM_INFO = '{}\nVersion {} {}\nCopywrite (c) 2015, {}'.format(
+PROGRAM_INFO = '{}\nv{} {}\nCopywrite (c) 2015, {}'.format(
         PROGRAM_NAME,
         PROGRAM_VERSION,
         VERSION_START_DATE,
@@ -129,20 +124,15 @@ def process_arguments():
 		)
 		arguments = parser.parse_args()
 		commands = arguments.commands
-		print commands[:]
 		# TODO: Validate input
 		command = construct_key(
 			commands[:] if len(commands) < 2 else commands[:-1]
 		)
-		print command
-		
 		was_success = False
-
 		if command in CC:
 			# Get the command from the catalog and pass the terminal
 			# commands as arguments to that command
 			CC[command](commands[:])
-			print CC[command].__class__.__name__
 			was_success = True
 		if not was_success:
 			# TODO: If cmd fails, treat appropriately
