@@ -69,7 +69,7 @@ class SmartCLIException(Exception):
 LOG = LoggerFactory.get("core", __name__).payload
 
 # Setup module globals
-PROGRAM_VERSION = '0.0.1'
+PROGRAM_VERSION = '0.0.2'
 VERSION_START_DATE = '12.20.2015'
 PROGRAM_NAME = 'Smart Command-line Interface (SmartCLI)'
 PROGRAM_INFO = '{}\nv{} {}\nCopywrite (c) 2015, {}'.format(
