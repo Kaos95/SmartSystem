@@ -4,6 +4,9 @@
 # @author: Hayden McParlane
 # @creation-date: 12.23.2015
 
+# Base project directory
+SMART_SYSTEM_HOME = r"/home/hayden/projects/github/SmartSystem"
+
 # JSON response standard format
 WAS_SUCCESS = "was_success"
 
