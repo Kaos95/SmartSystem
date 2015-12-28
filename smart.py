@@ -7,7 +7,6 @@
 ################################################################################
 import abc as _ABC
 import argparse
-import ast
 import codecs as codecs
 import collections
 import json as json
@@ -27,18 +26,21 @@ def insert_sensor_data(commands):
 	assert(isinstance(commands, list))
 	assert(len(commands) > 3)
 #	assert(isinstance(commands[3], dict))
-	data = ast.literal_eval( commands[-1].encode('utf-8') )
-	payload = dict()
-	payload[G.PAYLOAD] = data
-	payload[G.UNIT_ID] = TEST_UNIT_ID # TODO: FINISH
-	payload[G.SENSOR_ID] = TEST_SENSOR_ID 
+	# TODO: Verify the security of use of literal_eval(...)
+	data = json.loads( commands[-1].encode('utf-8') )
+	payload = { 	G.PAYLOAD : data,
+			G.UNIT_ID : TEST_UNIT_ID,
+			G.SENSOR_ID : TEST_SENSOR_ID }
 	# TODO: Ensure dict keys and values are as needed and aren't a
 	#       security concern
+	# TODO: ***** SCAN DATA TO ENSURE EVENTS AREN'T NEEDED *****
+	rules = None
+	scan(data, rules)
 	command = SC.InsertSensorData(data=payload)
-	result = dict(invoke_command(command))
-	print "{} {}".format(OP_SUCCESS, result[G.PAYLOAD])
+	response = dict(invoke_command(command))
+	print "{} {}".format(OP_SUCCESS, response[G.PAYLOAD])
         LOG.info(INVOKED.format(command.__class__.__name__))
-	return result
+	return response
 
 def print_version(commands):
 	print PROGRAM_INFO
@@ -49,13 +51,23 @@ def construct_key(components):
 	key = ':'.join(components)
 	return key
 
-INVOKED = '{} successfully invoked'
+INVOKED = 'successfully invoked -> {}'
+INVOKING = 'invoking -> {}'
 def invoke_command(command):
 	'''Invoke a desired sensor command invoker.'''
 #	assert(isinstance(command, smart.sensor.commands.SmartSystemCommand))
+	command_name = command.__class__.__name__
+	LOG.info(INVOKING.format(command_name))
 	result = command.invoke()
-	LOG.info(INVOKED.format(command.__class__.__name__))
+	LOG.info(INVOKED.format(command_name))
 	return result
+
+def scan(data, rules):
+	'''Scan data for satisfaction of the passed rules.'''
+	# TODO: Use threading to increase rule scan efficiency
+	print "IN SCAN FOR RULES\n"
+	pass
+	
 
 ################################################################################
 # Module Exceptions
@@ -129,6 +141,10 @@ def process_arguments():
 		arguments = parser.parse_args()
 		commands = arguments.commands
 		# TODO: Validate input
+
+		# TODO: Is this manner of key construction fool-proof? This may
+		# result in logical errors later if the pattern below isn't
+		# applicable to all situations (i.e, if 
 		command = construct_key(
 			commands[:] if len(commands) < 2 else commands[:-1]
 		)
