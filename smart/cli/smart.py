@@ -7,6 +7,7 @@
 ################################################################################
 import abc as _ABC
 import argparse
+import ast
 import codecs as codecs
 import collections
 import json as json
@@ -27,7 +28,7 @@ def insert_sensor_data(commands):
 	assert(len(commands) > 3)
 #	assert(isinstance(commands[3], dict))
 	# TODO: Verify the security of use of literal_eval(...)
-	data = json.loads( commands[-1].encode('utf-8') )
+	data = ast.literal_eval( commands[-1].encode('utf-8') )
 	payload = { 	G.PAYLOAD : data,
 			G.UNIT_ID : TEST_UNIT_ID,
 			G.SENSOR_ID : TEST_SENSOR_ID }
@@ -38,7 +39,7 @@ def insert_sensor_data(commands):
 	scan(data, rules)
 	command = SC.InsertSensorData(data=payload)
 	response = dict(invoke_command(command))
-	print "{} {}".format(OP_SUCCESS, response[G.PAYLOAD])
+	print "{} id={}".format(OP_SUCCESS, response[G.PAYLOAD])
         LOG.info(INVOKED.format(command.__class__.__name__))
 	return response
 
@@ -107,10 +108,8 @@ INSERT_SENSOR_DATA = [CMD_SENSOR, CMD_INSERT, CMD_DATA]
 PRINT_VERSION = [CMD_VERSION]
 
 # Command Catalog
-CC = {
-        construct_key(INSERT_SENSOR_DATA) : insert_sensor_data,
-	construct_key(PRINT_VERSION) : print_version
-}
+CC = {	construct_key(INSERT_SENSOR_DATA) : insert_sensor_data,
+	construct_key(PRINT_VERSION) : print_version }
 
 ################################################################################
 # Module Main

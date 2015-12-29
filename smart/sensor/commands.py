@@ -20,6 +20,7 @@ API = None
 REST_BASE = G.REST_BASE_STORAGE
 LOG = LoggerFactory.get('core', __name__).payload
 
+SUCCESS = "execution success: {}"
 EXECUTING = "executing command: {}"
 class SmartSystemCommand(commander.Command):
 	def __init__(self, **kwargs):
@@ -41,11 +42,13 @@ class InsertSensorData(SmartSystemCommand):
                 '''Invoke the command. Calling this method signifies to the 
                    commander that that instance is ready for optimization
                    and execution'''
+		LOG.info(EXECUTING.format(self.__class__.__name__))
+		self.execute()
+		LOG.info(SUCCESS.format(self.__class__.__name__))
 		return self.execute()
 
 
 	def execute(self, **kwargs):
-		LOG.info(EXECUTING.format(self.__class__.__name__))
 		jdata = self.data()
 		unit_id = jdata[G.UNIT_ID]
 		sensor_id = jdata[G.SENSOR_ID]
