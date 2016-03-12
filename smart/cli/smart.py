@@ -11,6 +11,7 @@ import ast
 import codecs as codecs
 import collections
 import json as json
+import re as re
 from smart.core.system_logging import LoggerFactory
 import smart.globals as G
 import smart.sensor.commands as SC
@@ -29,13 +30,16 @@ def insert_sensor_data(commands):
 #	assert(isinstance(commands[3], dict))
 	# TODO: Verify the security of use of literal_eval(...)
 	data = ast.literal_eval( commands[-1].encode('utf-8') )
+	print "***** TYPE : {} *****".format(data.__class__.__name__)
 	payload = { 	G.PAYLOAD : data,
 			G.UNIT_ID : TEST_UNIT_ID,
 			G.SENSOR_ID : TEST_SENSOR_ID }
 	# TODO: Ensure dict keys and values are as needed and aren't a
 	#       security concern
 	# TODO: ***** SCAN DATA TO ENSURE EVENTS AREN'T NEEDED *****
-	rules = None
+	rules = [ ThresholdRule(	60.0, 
+					surpass=False, 
+					data_key='temperature' ) ]
 	scan(data, rules)
 	command = SC.InsertSensorData(data=payload)
 	response = dict(invoke_command(command))
@@ -45,6 +49,75 @@ def insert_sensor_data(commands):
 
 def print_version(commands):
 	print PROGRAM_INFO
+
+################################################################################
+# Rules (objects defining conditions under which event will be invoked)
+################################################################################
+# TODO: Look into execution efficiency of regular expressions in python.
+#       Different way to do it? Should these be static methods?
+class Rule(object):
+	def is_satisfied(self, data):
+		'''Check to see if the data satisfies the given rule. Return
+		value is True is yes, False is no.'''
+		raise NotImplementedError()
+
+	def invoke_events(self):
+		'''Invoke an attached event.'''
+		raise NotImplementedError()
+
+class SensorRule(Rule):
+	def is_satisfied(self, data):
+		pass
+
+	def invoke_events(self):
+		pass
+
+class ThresholdRule(Rule):
+	def __init__(self, threshold, surpass, events, data_key):
+		'''Initialize the threshold rule with a threshold number and
+		optional surpass value. surpass is used to specify whether
+		the rule event should be invoked if the threshold is surpassed
+		(surpass=True) or if dropped below (surpass=False).'''
+		self.threshold = threshold
+		self.surpass = surpass
+		self.data_key = data_key
+		self.events = events
+		self.regex = "\\[\"\']{1}%s[\"\']{1}[ \t]*:{1}(.+?)\\"
+
+	def is_satisfied(self, data):
+		# This re finds the pattern that matches { ... "key": <value> ...}
+		# and extracts the value from the string
+		restr = self.regex % 
+			(self.key)
+		match = re.search(restr, data)
+		print match
+		# TODO: Implement using fewer comparisons and perhaps a different
+		#       implementation all-together. Just for speed of dev now.
+		if match:
+			value = float(match.group(1))
+			print value
+			if surpass:
+				if value <= self.threshold:
+					pass
+				else:
+					self.invoke_events()
+			else:
+				if value >= self.threshold:
+					pass
+				else:
+					self.invoke_events()
+		else:
+			raise ValueError()
+			
+			
+
+	def invoke_events(self):
+		for key, event in self.events.iteritems():
+			event_name = self.event.__class__.__name__
+			LOG.info(INVOKING.format(event_name))
+			event.invoke()
+			LOG.info(INVOKED.format(event_name))
+
 ################################################################################
 # Functions
 ################################################################################
@@ -52,8 +125,6 @@ def construct_key(components):
 	key = ':'.join(components)
 	return key
 
-INVOKED = 'successfully invoked -> {}'
-INVOKING = 'invoking -> {}'
 def invoke_command(command):
 	'''Invoke a desired sensor command invoker.'''
 #	assert(isinstance(command, smart.sensor.commands.SmartSystemCommand))
@@ -66,8 +137,10 @@ def invoke_command(command):
 def scan(data, rules):
 	'''Scan data for satisfaction of the passed rules.'''
 	# TODO: Use threading to increase rule scan efficiency
-	pass
-	
+	for rule in rules:
+		if rule.is_satisfied(data):
+			rule.invoke_events()
+
 
 ################################################################################
 # Module Exceptions
@@ -79,6 +152,10 @@ class SmartCLIException(Exception):
 # Globals
 ################################################################################
 LOG = LoggerFactory.get("core", __name__).payload
+
+# Standard module log messages
+INVOKED = 'successfully invoked -> {}'
+INVOKING = 'invoking -> {}'
 
 # Setup module globals
 PROGRAM_VERSION = '0.0.2'

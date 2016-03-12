@@ -61,7 +61,7 @@ class Rule(object):
 		value is True is yes, False is no.'''
 		raise NotImplementedError()
 
-	def invoke_events(self):
+	def invoke_event(self):
 		'''Invoke an attached event.'''
 		raise NotImplementedError()
 
@@ -69,54 +69,28 @@ class SensorRule(Rule):
 	def is_satisfied(self, data):
 		pass
 
-	def invoke_events(self):
+	def invoke_event(self):
 		pass
 
 class ThresholdRule(Rule):
-	def __init__(self, threshold, surpass, events, data_key):
-		'''Initialize the threshold rule with a threshold number and
+	def __init__(self, threshold, data_key, surpass=True):
+		'''Initialize the threshold rule with a threshold float and
 		optional surpass value. surpass is used to specify whether
 		the rule event should be invoked if the threshold is surpassed
 		(surpass=True) or if dropped below (surpass=False).'''
 		self.threshold = threshold
 		self.surpass = surpass
 		self.data_key = data_key
-		self.events = events
-		self.regex = "\\[\"\']{1}%s[\"\']{1}[ \t]*:{1}(.+?)\\"
+		
 
 	def is_satisfied(self, data):
-		# This re finds the pattern that matches { ... "key": <value> ...}
-		# and extracts the value from the string
-		restr = self.regex % 
-			(self.key)
-		match = re.search(restr, data)
-		print match
-		# TODO: Implement using fewer comparisons and perhaps a different
-		#       implementation all-together. Just for speed of dev now.
-		if match:
-			value = float(match.group(1))
-			print value
-			if surpass:
-				if value <= self.threshold:
-					pass
-				else:
-					self.invoke_events()
-			else:
-				if value >= self.threshold:
-					pass
-				else:
-					self.invoke_events()
+		if surpass:
+			pass	
 		else:
-			raise ValueError()
-			
-			
+			pass
 
-	def invoke_events(self):
-		for key, event in self.events.iteritems():
-			event_name = self.event.__class__.__name__
-			LOG.info(INVOKING.format(event_name))
-			event.invoke()
-			LOG.info(INVOKED.format(event_name))
+	def invoke_event(self):
+		pass
 
 ################################################################################
 # Functions
@@ -125,6 +99,8 @@ def construct_key(components):
 	key = ':'.join(components)
 	return key
 
+INVOKED = 'successfully invoked -> {}'
+INVOKING = 'invoking -> {}'
 def invoke_command(command):
 	'''Invoke a desired sensor command invoker.'''
 #	assert(isinstance(command, smart.sensor.commands.SmartSystemCommand))
@@ -139,7 +115,7 @@ def scan(data, rules):
 	# TODO: Use threading to increase rule scan efficiency
 	for rule in rules:
 		if rule.is_satisfied(data):
-			rule.invoke_events()
+			rule.invoke_event()
 
 
 ################################################################################
@@ -152,10 +128,6 @@ class SmartCLIException(Exception):
 # Globals
 ################################################################################
 LOG = LoggerFactory.get("core", __name__).payload
-
-# Standard module log messages
-INVOKED = 'successfully invoked -> {}'
-INVOKING = 'invoking -> {}'
 
 # Setup module globals
 PROGRAM_VERSION = '0.0.2'
